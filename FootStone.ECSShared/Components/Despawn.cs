@@ -1,8 +1,7 @@
 ﻿using System;
 using Unity.Entities;
-using UnityEngine;
 
-namespace Assets.Scripts.ECS
+namespace FootStone.ECS
 {
     [Serializable]
     public struct Despawn : IComponentData

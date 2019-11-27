@@ -37,8 +37,8 @@ namespace FootStone.ECS
         {
             if (start.TickRate != end.TickRate)
             {
-                GameDebug.LogError("Trying to compare time with different Tick rates (" + start.TickRate + " and " +
-                                   end.TickRate + ")");
+             //   GameDebug.LogError("Trying to compare time with different Tick rates (" + start.TickRate + " and " +
+                            //       end.TickRate + ")");
                 return 0;
             }
 

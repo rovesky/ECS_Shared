@@ -4,6 +4,8 @@ using Unity.Entities;
 using UnityEngine.Profiling;
 using Unity.Mathematics;
 using Assets.Scripts.ECS;
+using FootStone.ECS;
+
 
 [DisableAutoCreation]
 public class CreateProjectileMovementCollisionQueries : ComponentSystem
@@ -35,7 +37,7 @@ public class CreateProjectileMovementCollisionQueries : ComponentSystem
 
             var collisionTestTick = (int)worldTime.Tick - projectileData.collisionCheckTickDelay;
 
-            var totalMoveDuration = worldTime.gameTick.DurationSinceTick(projectileData.startTick);
+            var totalMoveDuration = worldTime.GameTick.DurationSinceTick(projectileData.startTick);
             var totalMoveDist = totalMoveDuration * projectileData.settings.velocity;
 
             var dir = Vector3.Normalize(projectileData.endPos - projectileData.startPos);
@@ -175,14 +177,14 @@ public class DespawnProjectiles :ComponentSystem
             
             if (projectileData.impactTick > 0)
             {
-                if (worldTime.gameTick.DurationSinceTick(projectileData.impactTick) > 1.0f)
+                if (worldTime.GameTick.DurationSinceTick(projectileData.impactTick) > 1.0f)
                 {
                     PostUpdateCommands.AddComponent(entityArray[i],new Despawn());
                 }
                 continue;
             }
 
-            var age = worldTime.gameTick.DurationSinceTick(projectileData.startTick);
+            var age = worldTime.GameTick.DurationSinceTick(projectileData.startTick);
             var toOld = age > projectileData.maxAge;
             if (toOld)
             {

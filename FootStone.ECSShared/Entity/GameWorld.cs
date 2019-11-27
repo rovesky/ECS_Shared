@@ -4,14 +4,13 @@ using UnityEngine;
 
 namespace FootStone.ECS
 {
-
     public class GameWorld : IGameTime
     {
         private readonly long stopwatchFrequency;
 
         public GameWorld(string name = "world")
         {
-            GameDebug.Log("GameWorld " + name + " initializing");
+            //  GameDebug.Log("GameWorld " + name + " initializing");
 
             stopwatchFrequency = Stopwatch.Frequency;
             Clock = new Stopwatch();
@@ -30,10 +29,9 @@ namespace FootStone.ECS
             FrameTime = (double) Clock.ElapsedTicks / stopwatchFrequency;
         }
 
-        internal T Spawn<T>(GameObject prefab)
+        public T Spawn<T>(GameObject prefab)
         {
             throw new NotImplementedException();
         }
-      
     }
 }

@@ -1,33 +1,22 @@
-﻿using FootStone.ECS;
-using System;
-using System.IO;
-using Unity.Collections;
+﻿using System;
 using Unity.Entities;
-using UnityEngine;
 
-namespace Assets.Scripts.ECS
+namespace FootStone.ECS
 {
-
     [Serializable]
     public struct WorldTime : IComponentData
     {
-        public GameTick gameTick;
-        public double frameTime;
+        public GameTick GameTick;
+        public double FrameTime;
 
-        public uint Tick => gameTick.Tick;
-        public float TickDuration => gameTick.TickDuration;
-        public float TickDurationAsFraction => gameTick.TickDurationAsFraction;
-      
+        public uint Tick => GameTick.Tick;
+        public float TickDuration => GameTick.TickDuration;
+        public float TickDurationAsFraction => GameTick.TickDurationAsFraction;
 
-        public void SetTick(uint tick,float duration)
+
+        public void SetTick(uint tick, float duration)
         {
-            gameTick.SetTick(tick, duration);
-        }
-
-        public void SetTick(GameTick gameTick)
-        {
-            this.gameTick = gameTick;
+            GameTick.SetTick(tick, duration);
         }
     }
-
 }
