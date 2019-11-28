@@ -1,7 +1,6 @@
 ﻿using Unity.Entities;
 using UnityEngine;
 using FootStone.ECS;
-using ReplicatedEntity;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif

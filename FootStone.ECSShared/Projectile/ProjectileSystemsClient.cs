@@ -9,7 +9,7 @@ using Unity.Mathematics;
 //using UnityEditor.Experimental.Rendering;
 using UnityEngine.Profiling;
 using FootStone.ECS;
-using Assets.Scripts.ECS;
+
 
 
 // Added to projectiles that are created locally. System attempts to find a mathcing projectile comming from server.

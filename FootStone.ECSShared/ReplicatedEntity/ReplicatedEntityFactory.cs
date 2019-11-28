@@ -1,15 +1,13 @@
-﻿using FootStone.ECS;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unity.Entities;
 using UnityEditor;
 using UnityEngine;
-namespace ReplicatedEntity
+
+namespace FootStone.ECS
 {
     public abstract class ReplicatedEntityFactory : ScriptableObject
     {
-        [HideInInspector]
-        public WeakAssetReference guid;
+        [HideInInspector] public WeakAssetReference guid;
 
         public abstract Entity Create(EntityManager entityManager, BundledResourceManager resourceManager,
             GameWorld world);
@@ -57,6 +55,31 @@ namespace ReplicatedEntity
     }
 
 #endif
-}
 
+
+    public class ReplicatedEntityFactoryManager
+    {
+
+        private Dictionary<ushort, ReplicatedEntityFactory> factories = new Dictionary<ushort, ReplicatedEntityFactory>();
+
+        public ReplicatedEntityFactoryManager()
+        {
+
+        }
+
+        public void RegisterFactory(ushort typeId, ReplicatedEntityFactory typeFactory)
+        {
+            factories.Add(typeId,typeFactory);
+        }
+
+        public ReplicatedEntityFactory GetFactory(ushort typeId)
+        {
+            return factories[typeId];
+        }
+
+
+    }
+
+
+}
 

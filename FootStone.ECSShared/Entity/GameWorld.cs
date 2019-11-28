@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Unity.Entities;
 using UnityEngine;
 
 namespace FootStone.ECS
@@ -32,6 +33,11 @@ namespace FootStone.ECS
         public T Spawn<T>(GameObject prefab)
         {
             throw new NotImplementedException();
+        }
+
+        public EntityManager GetEntityManager()
+        {
+            return World.Active.EntityManager;
         }
     }
 }

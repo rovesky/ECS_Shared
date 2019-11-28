@@ -1,5 +1,6 @@
 ﻿using Unity.Entities;
-namespace ReplicatedEntity
+
+namespace FootStone.ECS
 {
     public interface IEntityReferenceSerializer
     {
@@ -9,39 +10,37 @@ namespace ReplicatedEntity
 
     public struct SerializeContext
     {
-        public EntityManager entityManager;
-        public Entity entity;
-        public IEntityReferenceSerializer refSerializer;
-        public int tick;
+        public EntityManager EntityManager;
+        public Entity Entity;
+        public IEntityReferenceSerializer RefSerializer;
+        public int Tick;
     }
 
-    public interface IPredictedDataBase
+    public interface IPredictedStateBase
     {
     }
 
-    public interface IInterpolatedDataBase
+    public interface IInterpolatedStateBase
     {
     }
 
     // Interface for components that are replicated to all clients
-    public interface IReplicatedComponent
+    public interface IReplicatedState
     {
         void Serialize(ref SerializeContext context, ref NetworkWriter writer);
         void Deserialize(ref SerializeContext context, ref NetworkReader reader);
     }
 
     // Interface for components that are replicated only to predicting clients
-    public interface IPredictedComponent<T> : IPredictedDataBase
+    public interface IPredictedState<T> : IPredictedStateBase
     {
         void Serialize(ref SerializeContext context, ref NetworkWriter writer);
         void Deserialize(ref SerializeContext context, ref NetworkReader reader);
-#if UNITY_EDITOR
-        //   bool VerifyPrediction(ref T state);
-#endif
+        bool VerifyPrediction(ref T state);
     }
 
     // Interface for components that are replicated to all non-predicting clients
-    public interface IInterpolatedComponent<T> : IInterpolatedDataBase
+    public interface IInterpolatedState<T> : IInterpolatedStateBase
     {
         void Serialize(ref SerializeContext context, ref NetworkWriter writer);
         void Deserialize(ref SerializeContext context, ref NetworkReader reader);

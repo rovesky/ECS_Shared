@@ -3,7 +3,6 @@ using UnityEngine;
 using Unity.Entities;
 using UnityEngine.Profiling;
 using Unity.Mathematics;
-using Assets.Scripts.ECS;
 using FootStone.ECS;
 
 

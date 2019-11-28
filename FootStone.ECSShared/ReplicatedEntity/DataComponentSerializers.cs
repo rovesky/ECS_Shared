@@ -1,58 +1,56 @@
-﻿using FootStone.ECS;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Unity.Entities;
 
-namespace ReplicatedEntity
+namespace FootStone.ECS
 {
-    public interface IReplicatedComponentSerializerFactory
+    public interface IReplicatedStateSerializerFactory
     {
         IReplicatedSerializer CreateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer);
     }
 
-    public interface IPredictedComponentSerializerFactory
+    public interface IPredictedStateSerializerFactory
     {
         IPredictedSerializer CreateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer);
     }
 
-    public interface IInterpolatedComponentSerializerFactory
+    public interface IInterpolatedStateSerializerFactory
     {
         IInterpolatedSerializer CreateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer);
     }
 
-    class ReplicatedComponentSerializerFactory<T> : IReplicatedComponentSerializerFactory
-        where T : struct, IReplicatedComponent, IComponentData
+    public class ReplicatedStateSerializerFactory<T> : IReplicatedStateSerializerFactory
+        where T : struct, IReplicatedState, IComponentData
     {
         public IReplicatedSerializer CreateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            return new ReplicatedComponentSerializer<T>(entityManager, entity, refSerializer);
+            return new ReplicatedStateSerializer<T>(entityManager, entity, refSerializer);
         }
     }
 
-    class PredictedComponentSerializerFactory<T> : IPredictedComponentSerializerFactory
-        where T : struct, IPredictedComponent<T>, IComponentData
+    public class PredictedStateSerializerFactory<T> : IPredictedStateSerializerFactory
+        where T : struct, IPredictedState<T>, IComponentData
     {
         public IPredictedSerializer CreateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            return new PredictedComponentSerializer<T>(entityManager, entity, refSerializer);
+            return new PredictedStateSerializer<T>(entityManager, entity, refSerializer);
         }
     }
 
-    class InterpolatedComponentSerializerFactory<T> : IInterpolatedComponentSerializerFactory
-        where T : struct, IInterpolatedComponent<T>, IComponentData
+    public class InterpolatedStateSerializerFactory<T> : IInterpolatedStateSerializerFactory
+        where T : struct, IInterpolatedState<T>, IComponentData
     {
         public IInterpolatedSerializer CreateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            return new InterpolatedComponentSerializer<T>(entityManager, entity, refSerializer);
+            return new InterpolatedStateSerializer<T>(entityManager, entity, refSerializer);
         }
     }
-
 
 
     public interface IReplicatedSerializer
@@ -67,14 +65,12 @@ namespace ReplicatedEntity
         void Deserialize(ref NetworkReader reader, int tick);
         void Rollback();
 
-#if UNITY_EDITOR
-        //Entity GetEntity();
-        //bool HasServerState(int tick);
-        //object GetServerState(int tick);
-        //void StorePredictedState(int sampleIndex, int predictionIndex);
-        //object GetPredictedState(int sampleIndex, int predictionIndex);
-        //bool VerifyPrediction(int sampleIndex, int tick);
-#endif
+        Entity GetEntity();
+        bool HasServerState(int tick);
+        object GetServerState(int tick);
+        void StorePredictedState(int sampleIndex, int predictionIndex);
+        object GetPredictedState(int sampleIndex, int predictionIndex);
+        bool VerifyPrediction(int sampleIndex, int tick);
     }
 
     public interface IInterpolatedSerializer
@@ -84,74 +80,73 @@ namespace ReplicatedEntity
         void Interpolate(GameTick time);
     }
 
-    class ReplicatedComponentSerializer<T> : IReplicatedSerializer
-        where T : struct, IReplicatedComponent, IComponentData
+    internal class ReplicatedStateSerializer<T> : IReplicatedSerializer
+        where T : struct, IReplicatedState, IComponentData
     {
-        protected SerializeContext context;
+        private SerializeContext context;
 
-        public ReplicatedComponentSerializer(EntityManager entityManager, Entity entity,
+        public ReplicatedStateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            context.entityManager = entityManager;
-            context.entity = entity;
-            context.refSerializer = refSerializer;
+            context.EntityManager = entityManager;
+            context.Entity = entity;
+            context.RefSerializer = refSerializer;
         }
 
         public void Serialize(ref NetworkWriter writer)
         {
-            var state = context.entityManager.GetComponentData<T>(context.entity);
+            var state = context.EntityManager.GetComponentData<T>(context.Entity);
             state.Serialize(ref context, ref writer);
         }
 
         public void Deserialize(ref NetworkReader reader, int tick)
         {
-            var state = context.entityManager.GetComponentData<T>(context.entity);
-            context.tick = tick;
+            var state = context.EntityManager.GetComponentData<T>(context.Entity);
+            context.Tick = tick;
             state.Deserialize(ref context, ref reader);
-            context.entityManager.SetComponentData(context.entity, state);
+            context.EntityManager.SetComponentData(context.Entity, state);
         }
     }
 
-    class PredictedComponentSerializer<T> : IPredictedSerializer
-        where T : struct, IPredictedComponent<T>, IComponentData
+    internal class PredictedStateSerializer<T> : IPredictedSerializer
+        where T : struct, IPredictedState<T>, IComponentData
     {
-        SerializeContext context;
-        T m_lastServerState;
+        private SerializeContext context;
+        private T lastServerState;
+        private readonly T[] predictedStates;
 
-#if UNITY_EDITOR
-        //    SparseTickBuffer serverStateTicks;
-        //    T[] serverStates;
+        private SparseTickBuffer predictedStateTicks;
+        private readonly T[] serverStates;
 
-        ////    SparseTickBuffer predictedStateTicks;
-        //    T[] predictedStates;
-#endif
 
-        public PredictedComponentSerializer(EntityManager entityManager, Entity entity,
+        private readonly SparseTickBuffer serverStateTicks;
+
+
+        public PredictedStateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            context.entityManager = entityManager;
-            context.entity = entity;
-            context.refSerializer = refSerializer;
+            context.EntityManager = entityManager;
+            context.Entity = entity;
+            context.RefSerializer = refSerializer;
+            lastServerState = default(T);
 
-#if UNITY_EDITOR
-            //        serverStateTicks = new SparseTickBuffer(ReplicatedEntityCollection.HistorySize);
-            //        serverStates = new T[ReplicatedEntityCollection.HistorySize];
+            serverStateTicks = new SparseTickBuffer(ReplicatedEntityCollection.HistorySize);
+            serverStates = new T[ReplicatedEntityCollection.HistorySize];
 
-            ////        predictedStateTicks = new SparseTickBuffer(ReplicatedEntityCollection.HistorySize);
-            //        predictedStates = new T[ReplicatedEntityCollection.HistorySize*ReplicatedEntityCollection.PredictionSize]; 
-#endif
+            //        predictedStateTicks = new SparseTickBuffer(ReplicatedEntityCollection.HistorySize);
+            predictedStates = new T[ReplicatedEntityCollection.HistorySize * ReplicatedEntityCollection.PredictionSize];
         }
 
         public void Serialize(ref NetworkWriter writer)
         {
-            var state = context.entityManager.GetComponentData<T>(context.entity);
+            var state = context.EntityManager.GetComponentData<T>(context.Entity);
             state.Serialize(ref context, ref writer);
         }
 
         public void Deserialize(ref NetworkReader reader, int tick)
         {
-            context.tick = tick;
-            m_lastServerState.Deserialize(ref context, ref reader);
+            context.Tick = tick;
+            lastServerState.Deserialize(ref context, ref reader);
 
 #if UNITY_EDITOR
             //if (ReplicatedEntityCollection.SampleHistory)
@@ -167,90 +162,87 @@ namespace ReplicatedEntity
         public void Rollback()
         {
             //        GameDebug.Log("Rollback:" + m_lastServerState); 
-            context.entityManager.SetComponentData(context.entity, m_lastServerState);
+            context.EntityManager.SetComponentData(context.Entity, lastServerState);
         }
 
-#if UNITY_EDITOR
 
-        //public Entity GetEntity()
-        //{
-        //    return context.entity;
-        //}
+        public Entity GetEntity()
+        {
+            return context.Entity;
+        }
 
-        //public object GetServerState(int tick)
-        //{
-        //    var index = serverStateTicks.GetIndex((uint)tick);
-        //    if (index == -1)
-        //        return null;
+        public object GetServerState(int tick)
+        {
+            var index = serverStateTicks.GetIndex((uint) tick);
+            if (index == -1)
+                return null;
 
-        //    return serverStates[index];
-        //}
+            return serverStates[index];
+        }
 
-        //public bool HasServerState(int tick)
-        //{
-        //    var index = serverStateTicks.GetIndex((uint)tick);
-        //    return index != -1;
-        //}
+        public bool HasServerState(int tick)
+        {
+            var index = serverStateTicks.GetIndex((uint) tick);
+            return index != -1;
+        }
 
-        //public void StorePredictedState(int sampleIndex, int predictionIndex)
-        //{
-        //    if (!ReplicatedEntityCollection.SampleHistory)
-        //        return;
+        public void StorePredictedState(int sampleIndex, int predictionIndex)
+        {
+            if (!ReplicatedEntityCollection.SampleHistory)
+                return;
 
-        //    if (predictionIndex >= ReplicatedEntityCollection.PredictionSize)
-        //        return;
+            if (predictionIndex >= ReplicatedEntityCollection.PredictionSize)
+                return;
 
-        //    var index = sampleIndex * ReplicatedEntityCollection.PredictionSize + predictionIndex;
+            var index = sampleIndex * ReplicatedEntityCollection.PredictionSize + predictionIndex;
 
-        //    var state = context.entityManager.GetComponentData<T>(context.entity);
-        //    predictedStates[index] = state;
-        //}
+            var state = context.EntityManager.GetComponentData<T>(context.Entity);
+            predictedStates[index] = state;
+        }
 
-        //public object GetPredictedState(int sampleIndex, int predictionIndex)
-        //{
-        //    if (predictionIndex >= ReplicatedEntityCollection.PredictionSize)
-        //        return null;
+        public object GetPredictedState(int sampleIndex, int predictionIndex)
+        {
+            if (predictionIndex >= ReplicatedEntityCollection.PredictionSize)
+                return null;
 
-        //    var index = sampleIndex * ReplicatedEntityCollection.PredictionSize + predictionIndex;
-        //    return predictedStates[index];
-        //}
+            var index = sampleIndex * ReplicatedEntityCollection.PredictionSize + predictionIndex;
+            return predictedStates[index];
+        }
 
-        //public bool VerifyPrediction(int sampleIndex, int tick)
-        //{
-        //    var serverIndex = serverStateTicks.GetIndex((uint)tick);
-        //    if (serverIndex == -1)
-        //        return true;
+        public bool VerifyPrediction(int sampleIndex, int tick)
+        {
+            var serverIndex = serverStateTicks.GetIndex((uint) tick);
+            if (serverIndex == -1)
+                return true;
 
-        //    var predictedIndex = sampleIndex * ReplicatedEntityCollection.PredictionSize;
-        //    return serverStates[serverIndex].VerifyPrediction(ref predictedStates[predictedIndex]);
-        //}
-
-#endif
+            var predictedIndex = sampleIndex * ReplicatedEntityCollection.PredictionSize;
+            return serverStates[serverIndex].VerifyPrediction(ref predictedStates[predictedIndex]);
+        }
     }
 
-    class InterpolatedComponentSerializer<T> : IInterpolatedSerializer
-        where T : struct, IInterpolatedComponent<T>, IComponentData
+    internal class InterpolatedStateSerializer<T> : IInterpolatedSerializer
+        where T : struct, IInterpolatedState<T>, IComponentData
     {
-        SerializeContext context;
-        TickStateSparseBuffer<T> stateHistory = new TickStateSparseBuffer<T>(32);
+        private SerializeContext context;
+        private readonly TickStateSparseBuffer<T> stateHistory = new TickStateSparseBuffer<T>(32);
 
-        public InterpolatedComponentSerializer(EntityManager entityManager, Entity entity,
+        public InterpolatedStateSerializer(EntityManager entityManager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            context.entityManager = entityManager;
-            context.entity = entity;
-            context.refSerializer = refSerializer;
+            context.EntityManager = entityManager;
+            context.Entity = entity;
+            context.RefSerializer = refSerializer;
         }
 
         public void Serialize(ref NetworkWriter writer)
         {
-            var state = context.entityManager.GetComponentData<T>(context.entity);
+            var state = context.EntityManager.GetComponentData<T>(context.Entity);
             state.Serialize(ref context, ref writer);
         }
 
         public void Deserialize(ref NetworkReader reader, int tick)
         {
-            context.tick = tick;
+            context.Tick = tick;
             var state = new T();
             state.Deserialize(ref context, ref reader);
             stateHistory.Add(tick, state);
@@ -258,14 +250,14 @@ namespace ReplicatedEntity
 
         public void Interpolate(GameTick interpTime)
         {
-
-            T state = new T();
+            var state = new T();
 
             if (stateHistory.Count > 0)
             {
                 int lowIndex = 0, highIndex = 0;
                 float interpVal = 0;
-                var interpValid = stateHistory.GetStates((int)interpTime.Tick, interpTime.TickDurationAsFraction, ref lowIndex, ref highIndex, ref interpVal);
+                var interpValid = stateHistory.GetStates((int) interpTime.Tick, interpTime.TickDurationAsFraction,
+                    ref lowIndex, ref highIndex, ref interpVal);
 
                 if (interpValid)
                 {
@@ -279,29 +271,21 @@ namespace ReplicatedEntity
                 }
             }
 
-            context.entityManager.SetComponentData(context.entity, state);
+            context.EntityManager.SetComponentData(context.Entity, state);
         }
     }
 
 
-
-
     public class DataComponentSerializers
     {
+        private readonly Dictionary<Type, IInterpolatedStateSerializerFactory> interpolatedSerializerFactories =
+            new Dictionary<Type, IInterpolatedStateSerializerFactory>();
 
+        private readonly Dictionary<Type, IReplicatedStateSerializerFactory> netSerializerFactories =
+            new Dictionary<Type, IReplicatedStateSerializerFactory>();
 
-
-
-
-
-        Dictionary<Type, IReplicatedComponentSerializerFactory> m_netSerializerFactories =
-            new Dictionary<Type, IReplicatedComponentSerializerFactory>();
-
-        Dictionary<Type, IPredictedComponentSerializerFactory> m_predictedSerializerFactories =
-            new Dictionary<Type, IPredictedComponentSerializerFactory>();
-
-        Dictionary<Type, IInterpolatedComponentSerializerFactory> m_interpolatedSerializerFactories =
-            new Dictionary<Type, IInterpolatedComponentSerializerFactory>();
+        private readonly Dictionary<Type, IPredictedStateSerializerFactory> predictedSerializerFactories =
+            new Dictionary<Type, IPredictedStateSerializerFactory>();
 
         public DataComponentSerializers()
         {
@@ -311,11 +295,10 @@ namespace ReplicatedEntity
         public IReplicatedSerializer CreateNetSerializer(Type type, EntityManager manager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            IReplicatedComponentSerializerFactory factory;
-            if (m_netSerializerFactories.TryGetValue(type, out factory))
-            {
+            IReplicatedStateSerializerFactory factory;
+            if (netSerializerFactories.TryGetValue(type, out factory))
                 return factory.CreateSerializer(manager, entity, refSerializer);
-            }
+
             GameDebug.LogError("Failed to find INetSerializer for type:" + type.Name);
             return null;
         }
@@ -323,11 +306,10 @@ namespace ReplicatedEntity
         public IPredictedSerializer CreatePredictedSerializer(Type type, EntityManager manager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            IPredictedComponentSerializerFactory factory;
-            if (m_predictedSerializerFactories.TryGetValue(type, out factory))
-            {
+            IPredictedStateSerializerFactory factory;
+            if (predictedSerializerFactories.TryGetValue(type, out factory))
                 return factory.CreateSerializer(manager, entity, refSerializer);
-            }
+
             GameDebug.LogError("Failed to find IPredictedSerializer for type:" + type.Name);
             return null;
         }
@@ -335,96 +317,95 @@ namespace ReplicatedEntity
         public IInterpolatedSerializer CreateInterpolatedSerializer(Type type, EntityManager manager, Entity entity,
             IEntityReferenceSerializer refSerializer)
         {
-            IInterpolatedComponentSerializerFactory factory;
-            if (m_interpolatedSerializerFactories.TryGetValue(type, out factory))
-            {
+            IInterpolatedStateSerializerFactory factory;
+            if (interpolatedSerializerFactories.TryGetValue(type, out factory))
                 return factory.CreateSerializer(manager, entity, refSerializer);
-            }
+
             GameDebug.LogError("Failed to find IInterpolatedSerializer for type:" + type.Name);
             return null;
         }
 
 
-        void CreateSerializerFactories()
+        private void CreateSerializerFactories()
         {
             var componentDataType = typeof(IComponentData);
-            var serializedType = typeof(IReplicatedComponent);
-            var predictedType = typeof(IPredictedDataBase);
-            var interpolatedType = typeof(IInterpolatedDataBase);
+            var serializedType = typeof(IReplicatedState);
+            var predictedType = typeof(IPredictedStateBase);
+            var interpolatedType = typeof(IInterpolatedStateBase);
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var type in assembly.GetTypes())
             {
-                foreach (var type in assembly.GetTypes())
+                if (!componentDataType.IsAssignableFrom(type))
+                    continue;
+
+                if (serializedType.IsAssignableFrom(type))
                 {
-                    if (!componentDataType.IsAssignableFrom(type))
+                    //                    GameDebug.Log("Making serializer factory for type:" + type);
+
+                    var method = type.GetMethod("CreateSerializerFactory");
+                    if (method == null)
+                    {
+                        GameDebug.LogError("Replicated component " + type + " has no CreateSerializerFactory");
                         continue;
-
-                    if (serializedType.IsAssignableFrom(type))
-                    {
-                        //                    GameDebug.Log("Making serializer factory for type:" + type);
-
-                        var method = type.GetMethod("CreateSerializerFactory");
-                        if (method == null)
-                        {
-                            GameDebug.LogError("Replicated component " + type + " has no CreateSerializerFactory");
-                            continue;
-                        }
-
-                        if (method.ReturnType != typeof(IReplicatedComponentSerializerFactory))
-                        {
-                            GameDebug.LogError("Replicated component " + type + " CreateSerializerFactory does not have return type IReplicatedComponentSerializerFactory");
-                            continue;
-                        }
-
-                        var result = method.Invoke(null, new object[] { });
-                        m_netSerializerFactories.Add(type, (IReplicatedComponentSerializerFactory)result);
                     }
 
-                    if (predictedType.IsAssignableFrom(type))
+                    if (method.ReturnType != typeof(IReplicatedStateSerializerFactory))
                     {
-                        //                    GameDebug.Log("Making predicted serializer factory for type:" + type);
-
-                        var method = type.GetMethod("CreateSerializerFactory");
-                        if (method == null)
-                        {
-                            GameDebug.LogError("Predicted component " + type + " has no CreateSerializerFactory");
-                            continue;
-                        }
-
-                        if (method.ReturnType != typeof(IPredictedComponentSerializerFactory))
-                        {
-                            GameDebug.LogError("Replicated component " + type + " CreateSerializerFactory does not have return type IPredictedComponentSerializerFactory");
-                            continue;
-                        }
-
-                        var result = method.Invoke(null, new object[] { });
-                        m_predictedSerializerFactories.Add(type, (IPredictedComponentSerializerFactory)result);
+                        GameDebug.LogError("Replicated component " + type +
+                                           " CreateSerializerFactory does not have return type IReplicatedComponentSerializerFactory");
+                        continue;
                     }
 
-                    if (interpolatedType.IsAssignableFrom(type))
+                    var result = method.Invoke(null, new object[] { });
+                    netSerializerFactories.Add(type, (IReplicatedStateSerializerFactory) result);
+                }
+
+                if (predictedType.IsAssignableFrom(type))
+                {
+                    //                    GameDebug.Log("Making predicted serializer factory for type:" + type);
+
+                    var method = type.GetMethod("CreateSerializerFactory");
+                    if (method == null)
                     {
-                        //                    GameDebug.Log("Making interpolated serializer factory for type:" + type);
-
-                        var method = type.GetMethod("CreateSerializerFactory");
-                        if (method == null)
-                        {
-                            GameDebug.LogError("Interpolated component " + type + " has no CreateSerializerFactory");
-                            continue;
-                        }
-
-                        if (method.ReturnType != typeof(IInterpolatedComponentSerializerFactory))
-                        {
-                            GameDebug.LogError("Replicated component " + type + " CreateSerializerFactory does not have return type IInterpolatedComponentSerializerFactory");
-                            continue;
-                        }
-
-
-                        var result = method.Invoke(null, new object[] { });
-                        m_interpolatedSerializerFactories.Add(type, (IInterpolatedComponentSerializerFactory)result);
+                        GameDebug.LogError("Predicted component " + type + " has no CreateSerializerFactory");
+                        continue;
                     }
+
+                    if (method.ReturnType != typeof(IPredictedStateSerializerFactory))
+                    {
+                        GameDebug.LogError("Replicated component " + type +
+                                           " CreateSerializerFactory does not have return type IPredictedComponentSerializerFactory");
+                        continue;
+                    }
+
+                    var result = method.Invoke(null, new object[] { });
+                    predictedSerializerFactories.Add(type, (IPredictedStateSerializerFactory) result);
+                }
+
+                if (interpolatedType.IsAssignableFrom(type))
+                {
+                    //                    GameDebug.Log("Making interpolated serializer factory for type:" + type);
+
+                    var method = type.GetMethod("CreateSerializerFactory");
+                    if (method == null)
+                    {
+                        GameDebug.LogError("Interpolated component " + type + " has no CreateSerializerFactory");
+                        continue;
+                    }
+
+                    if (method.ReturnType != typeof(IInterpolatedStateSerializerFactory))
+                    {
+                        GameDebug.LogError("Replicated component " + type +
+                                           " CreateSerializerFactory does not have return type IInterpolatedComponentSerializerFactory");
+                        continue;
+                    }
+
+
+                    var result = method.Invoke(null, new object[] { });
+                    interpolatedSerializerFactories.Add(type, (IInterpolatedStateSerializerFactory) result);
                 }
             }
         }
     }
-
 }

@@ -3,6 +3,7 @@ using Unity.Collections;
 using UnityEngine;
 using Unity.Entities;
 using UnityEngine.Profiling;
+using FootStone.ECS;
 
 [DisableAutoCreation]
 public class HandleServerProjectileRequests :ComponentSystem

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using CollisionLib;
+using FootStone.ECS;
 using Primitives;
 using Unity.Collections;
 using Unity.Entities;

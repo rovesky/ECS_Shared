@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FootStone.ECS;
+using System;
 using UnityEditor;
 using UnityEngine;
 #if UNITY_EDITOR

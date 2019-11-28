@@ -1,4 +1,4 @@
-﻿using ReplicatedEntity;
+﻿using FootStone.ECS;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -9,7 +9,7 @@ public struct UpdateProjectileFlag : IComponentData
     public int foo;
 }
 
-public struct ProjectileData : IComponentData, IReplicatedComponent
+public struct ProjectileData : IComponentData, IReplicatedState
 {
     public int test;        // TODO remove this test no longer needed  
     public int projectileTypeRegistryIndex;
@@ -21,14 +21,14 @@ public struct ProjectileData : IComponentData, IReplicatedComponent
     public float3 impactPos;
     public float3 impactNormal;
     
-    public static IReplicatedComponentSerializerFactory CreateSerializerFactory()
+    public static IReplicatedStateSerializerFactory CreateSerializerFactory()
     {
-        return new ReplicatedComponentSerializerFactory<ProjectileData>();
+        return new ReplicatedStateSerializerFactory<ProjectileData>();
     }
     
     public void Serialize(ref SerializeContext context, ref NetworkWriter networkWriter)
     {
-        context.refSerializer.SerializeReference(ref networkWriter, "owner", projectileOwner);
+        context.RefSerializer.SerializeReference(ref networkWriter, "owner", projectileOwner);
         networkWriter.WriteUInt16("typeId", (ushort)projectileTypeRegistryIndex);
         networkWriter.WriteInt32("startTick", startTick);
         networkWriter.WriteVector3Q("startPosition", startPos,2);
@@ -40,7 +40,7 @@ public struct ProjectileData : IComponentData, IReplicatedComponent
 
     public void Deserialize(ref SerializeContext context, ref NetworkReader networkReader)
     {
-        context.refSerializer.DeserializeReference(ref networkReader, ref projectileOwner);
+        context.RefSerializer.DeserializeReference(ref networkReader, ref projectileOwner);
         projectileTypeRegistryIndex = networkReader.ReadUInt16();
         startTick = networkReader.ReadInt32();
         startPos = networkReader.ReadVector3Q();

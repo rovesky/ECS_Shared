@@ -1,4 +1,5 @@
-﻿using ReplicatedEntity;
+﻿
+using FootStone.ECS;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "ProjectileModuleSettings", menuName = "FPS Sample/Projectile/ProjectileSystemSettings")]
