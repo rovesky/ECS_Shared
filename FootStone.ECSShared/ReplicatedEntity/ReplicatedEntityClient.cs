@@ -10,24 +10,8 @@ namespace FootStone.ECS
         public ReplicatedEntityClient(World world)
         {
             this.world = world;
-            m_entityCollection = new ReplicatedEntityCollection(world.EntityManager);
+            entityCollection = new ReplicatedEntityCollection(world.EntityManager);
             factoryManager = new ReplicatedEntityFactoryManager();
-
-            //      m_world = world;
-            //     m_resourceSystem = resourceSystem;
-            //    m_assetRegistry = resourceSystem.GetResourceRegistry<ReplicatedEntityRegistry>();
-
-
-            //   m_UpdateReplicatedOwnerFlag = m_world.GetECSWorld().CreateManager<UpdateReplicatedOwnerFlag>(m_world);
-
-            // Load all replicated entity resources
-            //     m_assetRegistry.LoadAllResources(resourceSystem);
-
-            //if (world.SceneRoot != null)
-            //{
-            //    m_SystemRoot = new GameObject("ReplicatedEntitySystem");
-            //    m_SystemRoot.transform.SetParent(world.SceneRoot.transform);
-            //}
         }
 
         public void Shutdown()
@@ -38,10 +22,10 @@ namespace FootStone.ECS
              //   GameObject.Destroy(m_SystemRoot);
         }
 
-        public void ProcessEntitySpawn(int servertick, int id, ushort typeId)
+        public void ProcessEntitySpawn(int serverTick, int id, ushort typeId)
         {
-            if (m_showInfo.IntValue > 0)
-                GameDebug.Log("ProcessEntitySpawns. Server tick:" + servertick + " id:" + id + " typeid:" + typeId);
+        //    if (m_showInfo.IntValue > 0)
+            FSLog.Info("ProcessEntitySpawns. Server tick:" + serverTick + " id:" + id + " typeid:" + typeId);
 
             Profiler.BeginSample("ReplicatedEntitySystemClient.ProcessEntitySpawns()");
 
@@ -56,7 +40,7 @@ namespace FootStone.ECS
             replicatedDataEntity.Id = id;
             world.EntityManager.SetComponentData(entity, replicatedDataEntity);
 
-            m_entityCollection.Register(id, entity);
+            entityCollection.Register(id, entity);
 
             Profiler.EndSample();
 
@@ -67,7 +51,7 @@ namespace FootStone.ECS
             if (m_showInfo.IntValue > 1)
                 GameDebug.Log("ApplyEntitySnapshot. ServerTick:" + serverTick + " entityId:" + id);
 
-            m_entityCollection.ProcessEntityUpdate(serverTick, id, ref reader);
+            entityCollection.ProcessEntityUpdate(serverTick, id, ref reader);
         }
 
         public void ProcessEntityDespawns(int serverTime, List<int> despawns)
@@ -92,12 +76,17 @@ namespace FootStone.ECS
 
         public void Rollback()
         {
-            m_entityCollection.Rollback();
+            entityCollection.Rollback();
         }
 
         public void Interpolate(GameTick time)
         {
-            m_entityCollection.Interpolate(time);
+            entityCollection.Interpolate(time);
+        }
+
+        public void RegisterFactory(ushort typeId,ReplicatedEntityFactory factory )
+        {
+            factoryManager.RegisterFactory(typeId, factory);
         }
 
         //public void SetLocalPlayerId(int id)
@@ -166,12 +155,8 @@ namespace FootStone.ECS
 //#endif
 
         private readonly World world;
-        private readonly ReplicatedEntityCollection m_entityCollection;
+        private readonly ReplicatedEntityCollection entityCollection;
         private readonly ReplicatedEntityFactoryManager factoryManager;
-
-        //   readonly GameObject m_SystemRoot;
-        //  readonly BundledResourceManager m_resourceSystem;
-        // readonly ReplicatedEntityRegistry m_assetRegistry;
 
         //  readonly UpdateReplicatedOwnerFlag m_UpdateReplicatedOwnerFlag;
 

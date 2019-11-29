@@ -64,16 +64,20 @@ namespace FootStone.ECS
 
         public ReplicatedEntityFactoryManager()
         {
-
+            
         }
 
         public void RegisterFactory(ushort typeId, ReplicatedEntityFactory typeFactory)
         {
-            factories.Add(typeId,typeFactory);
+           
+            factories[typeId] = typeFactory;
+
+            FSLog.Info(($"RegisterFactory，typeId:{typeId},factories size:{factories.Count}"));
         }
 
         public ReplicatedEntityFactory GetFactory(ushort typeId)
         {
+            FSLog.Info(($"typeId:{typeId},factories size:{factories.Count}"));
             return factories[typeId];
         }
 
