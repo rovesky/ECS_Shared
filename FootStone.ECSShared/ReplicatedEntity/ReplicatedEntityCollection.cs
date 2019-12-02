@@ -125,6 +125,10 @@ namespace FootStone.ECS
             replicatedData[entityId] = data;
         }
 
+        public Entity GetEntity(int id)
+        {
+            return replicatedData[id].Entity;
+        }
 
         private void FindSerializers(Entity entity)
         {
@@ -271,7 +275,8 @@ namespace FootStone.ECS
                 if (!entityManager.HasComponent<ServerEntity>(replicatedData[i].Entity))
                     continue;
 
-                foreach (var predicted in replicatedData[i].PredictedArray) predicted.Rollback();
+                foreach (var predicted in replicatedData[i].PredictedArray)
+                    predicted.Rollback();
             }
         }
 

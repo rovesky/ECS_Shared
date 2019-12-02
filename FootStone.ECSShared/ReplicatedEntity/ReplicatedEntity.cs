@@ -46,6 +46,11 @@ namespace FootStone.ECS
             localPlayerId = playerId;
         }
 
+        protected override void OnCreate()
+        {
+            localPlayerId = -1;
+        }
+
         protected override void OnUpdate()
         {
            // FSLog.Info($"UpdateReplicatedOwnerFlag OnUpdate");
