@@ -3,7 +3,7 @@ using Unity.Entities;
 
 namespace FootStone.ECS
 {
-    [Serializable]
+  
     public struct WorldTime : IComponentData
     {
         public GameTick GameTick;

@@ -39,5 +39,6 @@ namespace FootStone.ECS
         {
             return World.Active.EntityManager;
         }
+     
     }
 }
