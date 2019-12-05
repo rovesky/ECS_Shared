@@ -2,7 +2,7 @@
 
 namespace FootStone.ECS
 {
-    [DisableAutoCreation]
+   // [DisableAutoCreation]
     public abstract class NoSortComponentSystemGroup : ComponentSystemGroup
     {
         public override void SortSystemUpdateList()
