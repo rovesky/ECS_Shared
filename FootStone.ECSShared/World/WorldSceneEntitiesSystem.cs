@@ -1,42 +1,65 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Transforms;
 
 namespace FootStone.ECS
 {
     [DisableAutoCreation]
     public class WorldSceneEntitiesSystem : ComponentSystem
     {
-        
+        private bool isInit;
+
+        public List<Entity> SceneEntities { get; private set; }
 
         protected override void OnCreate()
         {
-            SetEntitiesId();
+            SceneEntities = new List<Entity>();
+          
+        }
+        
+
+        protected override void OnDestroy()
+        {
         }
 
-        private void SetEntitiesId()
+        protected override void OnUpdate()
         {
+            if(isInit)
+                return;
+            isInit = true;
+
             var query = GetEntityQuery(typeof(ReplicatedEntityData));
             var entities = query.ToEntityArray(Allocator.TempJob);
-            for (var i = 0; i < entities.Length; ++i)
+
+            FSLog.Info($"entities.Length:{entities.Length}");
+
+            var entityList = entities.ToList();
+            entityList.Sort((a, b) =>
+            {
+                var sa = EntityManager.GetComponentData<ReplicatedEntityData>(a).NetId;
+                var sb = EntityManager.GetComponentData<ReplicatedEntityData>(b).NetId;
+
+                return sa.CompareTo(sb);
+            });
+
+
+            for (var i = 0; i < entityList.Count; ++i)
             {
                 var entity = entities[i];
                 var replicatedEntityData = EntityManager.GetComponentData<ReplicatedEntityData>(entity);
                 replicatedEntityData.Id = i;
                 EntityManager.SetComponentData(entity, replicatedEntityData);
+
+                var trans = EntityManager.GetComponentData<Translation>(entity);
+                FSLog.Info($"SceneEntities,id:{i},netId:{replicatedEntityData.NetId},trans:{trans.Value}");
             }
-        }
 
-        protected override void OnDestroy()
-        {
-        
-        }
+            SceneEntities.AddRange(entityList);
+            FSLog.Info($"SceneEntities.count:{SceneEntities.Count}");
 
-        protected override void OnUpdate()
-        {
-          
+            entities.Dispose();
         }
-
-      
     }
 }

@@ -8,12 +8,14 @@ namespace FootStone.ECS
     public struct ReplicatedEntityData : IComponentData, IReplicatedState
     {
         public WeakAssetReference AssetGuid; // Guid of asset this entity is created from
+        public long NetId;
         [NonSerialized] public int Id;
         [NonSerialized] public int PredictingPlayerId;
 
         public ReplicatedEntityData(WeakAssetReference guid)
         {
             AssetGuid = guid;
+            NetId = -1;
             Id = -1;
             PredictingPlayerId = -1;
         }
@@ -58,7 +60,9 @@ namespace FootStone.ECS
             Entities.ForEach((Entity entity,ref ReplicatedEntityData replicatedEntityData) =>
             {
              //   FSLog.Info($"localPlayerId:{localPlayerId},PredictingPlayerId:{replicatedEntityData.PredictingPlayerId}，id:{replicatedEntityData.Id}");
-                var locallyControlled = localPlayerId == -1 || replicatedEntityData.PredictingPlayerId == localPlayerId;
+                var locallyControlled = localPlayerId == -1 ||
+                                        replicatedEntityData.PredictingPlayerId == localPlayerId ||
+                                        replicatedEntityData.PredictingPlayerId == -1;
 
                 SetFlagAndChildFlags(entity, locallyControlled);
             });

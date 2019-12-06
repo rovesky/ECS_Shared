@@ -161,7 +161,8 @@ namespace FootStone.ECS
 
         public void Rollback()
         {
-            //        GameDebug.Log("Rollback:" + m_lastServerState); 
+           // if(typeof(T).Name.Equals("SlotPredictedState"))
+             //   FSLog.Info($"Rollback:{typeof(T).Name},Entity:{context.Entity}");
             context.EntityManager.SetComponentData(context.Entity, lastServerState);
         }
 

@@ -1,101 +1,107 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Text;
 using FootStone.ECS;
 using Unity.Entities;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace FootStone.Kitchen
+namespace FootStone.ECS
 {
     public class ReplicatedEntityDataBehaviour : MonoBehaviour, IConvertGameObjectToEntity
     {
 
-        public byte[] netID;
-
+        //    public int NetId;
         void IConvertGameObjectToEntity.Convert(Entity entity, EntityManager dstManager,
             GameObjectConversionSystem conversionSystem)
         {
-
+            FSLog.Info(" dstManager.AddComponentData(entity, new ReplicatedEntityData");
             dstManager.AddComponentData(entity, new ReplicatedEntityData
             {
                 Id = -1,
-                PredictingPlayerId = -1
+                PredictingPlayerId = -1,
+                NetId = ToVid(gameObject.name)
             });
-
         }
-/*
-#if UNITY_EDITOR
-        private void Awake()
+
+        private long ToVid(string str)
         {
-            if (EditorApplication.isPlaying)
-                return;
-            SetUniqueNetID();
-
+            System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            byte[] res = md5.ComputeHash(Encoding.UTF8.GetBytes(str), 0, str.Length);
+            return Math.Abs(BitConverter.ToInt64(res, 0));
         }
+     
 
-        //   public static Dictionary<byte[], ReplicatedEntity> netGuidMap = new Dictionary<byte[], ReplicatedEntity>(new ByteArrayComp());
+//#if UNITY_EDITOR
+//        private void Awake()
+//        {
+//            if (EditorApplication.isPlaying)
+//                return;
+//            SetUniqueNetID();
 
-        private void OnValidate()
-        {
-            if (EditorApplication.isPlaying)
-                return;
+//        }
 
-            SetUniqueNetID();
+//        //   public static Dictionary<byte[], ReplicatedEntity> netGuidMap = new Dictionary<byte[], ReplicatedEntity>(new ByteArrayComp());
 
-            //PrefabType prefabType = PrefabUtility.GetPrefabType(this);
-            //if (prefabType == PrefabType.Prefab || prefabType == PrefabType.ModelPrefab)
-            //{
-            //    netID = null;
-            //}
-            //else
-            //    SetUniqueNetID();
+//        private void OnValidate()
+//        {
+//            if (EditorApplication.isPlaying)
+//                return;
 
-            //UpdateAssetGuid();
-        }
+//            SetUniqueNetID();
 
-        //public bool SetAssetGUID(string guidStr)
-        //{
-        //    var guid = new WeakAssetReference(guidStr);
-        //    var val = Value;
-        //    var currentGuid = val.assetGuid;
-        //    if (!guid.Equals(currentGuid))
-        //    {
-        //        val.assetGuid = guid;
-        //        Value = val;
-        //        PrefabUtility.SavePrefabAsset(gameObject);
-        //        return true;
-        //    }
+//            //PrefabType prefabType = PrefabUtility.GetPrefabType(this);
+//            //if (prefabType == PrefabType.Prefab || prefabType == PrefabType.ModelPrefab)
+//            //{
+//            //    netID = null;
+//            //}
+//            //else
+//            //    SetUniqueNetID();
 
-        //    return false;
-        //}
+//            //UpdateAssetGuid();
+//        }
 
-        //public void UpdateAssetGuid()
-        //{
-        //    // Set type guid
-        //    var stage = PrefabStageUtility.GetPrefabStage(gameObject);
-        //    if (stage != null)
-        //    {
-        //        var guidStr = AssetDatabase.AssetPathToGUID(stage.prefabAssetPath);
-        //        if (SetAssetGUID(guidStr))
-        //            EditorSceneManager.MarkSceneDirty(stage.scene);
-        //    }
-        //}
+//        //public bool SetAssetGUID(string guidStr)
+//        //{
+//        //    var guid = new WeakAssetReference(guidStr);
+//        //    var val = Value;
+//        //    var currentGuid = val.assetGuid;
+//        //    if (!guid.Equals(currentGuid))
+//        //    {
+//        //        val.assetGuid = guid;
+//        //        Value = val;
+//        //        PrefabUtility.SavePrefabAsset(gameObject);
+//        //        return true;
+//        //    }
 
-        private void SetUniqueNetID()
-        {
-            
-            // Generate new if fresh object
-            if (netID == null || netID.Length == 0)
-            {
-                var guid = gameObject.name;
-                netID = guid.ToArray<byte>();
-                EditorSceneManager.MarkSceneDirty(gameObject.scene);
-            }
+//        //    return false;
+//        //}
 
-        }
+//        //public void UpdateAssetGuid()
+//        //{
+//        //    // Set type guid
+//        //    var stage = PrefabStageUtility.GetPrefabStage(gameObject);
+//        //    if (stage != null)
+//        //    {
+//        //        var guidStr = AssetDatabase.AssetPathToGUID(stage.prefabAssetPath);
+//        //        if (SetAssetGUID(guidStr))
+//        //            EditorSceneManager.MarkSceneDirty(stage.scene);
+//        //    }
+//        //}
 
-#endif
-*/
+//        private void SetUniqueNetID()
+//        {
+
+//            var guid = System.Guid.NewGuid();
+
+//            EditorSceneManager.MarkSceneDirty(gameObject.scene);
+
+
+//        }
+
+//#endif
+
 
     }
 }
