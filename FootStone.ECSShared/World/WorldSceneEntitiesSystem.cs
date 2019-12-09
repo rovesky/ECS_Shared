@@ -33,7 +33,7 @@ namespace FootStone.ECS
             var query = GetEntityQuery(typeof(ReplicatedEntityData));
             var entities = query.ToEntityArray(Allocator.TempJob);
 
-            FSLog.Info($"entities.Length:{entities.Length}");
+           // FSLog.Info($"entities.Length:{entities.Length}");
 
             var entityList = entities.ToList();
             entityList.Sort((a, b) =>
@@ -53,7 +53,7 @@ namespace FootStone.ECS
                 EntityManager.SetComponentData(entity, replicatedEntityData);
 
                 var trans = EntityManager.GetComponentData<Translation>(entity);
-                FSLog.Info($"SceneEntities,id:{i},netId:{replicatedEntityData.NetId},trans:{trans.Value}");
+             //   FSLog.Info($"SceneEntities,id:{i},netId:{replicatedEntityData.NetId},trans:{trans.Value}");
             }
 
             SceneEntities.AddRange(entityList);

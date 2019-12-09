@@ -125,10 +125,7 @@ namespace FootStone.ECS
             replicatedData[entityId] = data;
         }
 
-        public Entity GetEntity(int id)
-        {
-            return replicatedData[id].Entity;
-        }
+     
 
         private void FindSerializers(Entity entity)
         {
@@ -199,6 +196,12 @@ namespace FootStone.ECS
                         }
                 }
             }
+        }
+
+
+        public Entity GetEntity(int id)
+        {
+            return replicatedData[id].Entity;
         }
 
         public Entity Unregister(int entityId)
