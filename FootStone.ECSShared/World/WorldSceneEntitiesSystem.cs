@@ -52,7 +52,7 @@ namespace FootStone.ECS
                 replicatedEntityData.Id = i;
                 EntityManager.SetComponentData(entity, replicatedEntityData);
 
-                var trans = EntityManager.GetComponentData<Translation>(entity);
+             //   var trans = EntityManager.GetComponentData<Translation>(entity);
              //   FSLog.Info($"SceneEntities,id:{i},netId:{replicatedEntityData.NetId},trans:{trans.Value}");
             }
 
