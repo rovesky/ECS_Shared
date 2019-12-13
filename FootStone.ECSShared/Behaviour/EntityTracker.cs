@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using FootStone.ECS;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
@@ -12,6 +13,7 @@ namespace FootStone.Kitchen
 
         public void SetReceivedEntity(Entity entity)
         {
+       //     FSLog.Info($"SetReceivedEntity:{entity}");
             EntityToTrack = entity;
         }
 

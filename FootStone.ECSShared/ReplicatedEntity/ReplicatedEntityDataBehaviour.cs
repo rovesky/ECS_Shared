@@ -11,7 +11,7 @@ namespace FootStone.ECS
         void IConvertGameObjectToEntity.Convert(Entity entity, EntityManager dstManager,
             GameObjectConversionSystem conversionSystem)
         {
-            FSLog.Info(" dstManager.AddComponentData(entity, new ReplicatedEntityData");
+          //  FSLog.Info(" dstManager.AddComponentData(entity, new ReplicatedEntityData");
             dstManager.AddComponentData(entity, new ReplicatedEntityData
             {
                 Id = -1,

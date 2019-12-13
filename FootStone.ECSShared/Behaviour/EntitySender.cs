@@ -1,4 +1,5 @@
-﻿using Unity.Entities;
+﻿using FootStone.ECS;
+using Unity.Entities;
 using UnityEngine;
 
 namespace FootStone.Kitchen
@@ -18,7 +19,8 @@ namespace FootStone.Kitchen
 
         public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
         {
-            dstManager.AddComponentData(entity, new SentEntity() { });
+           // FSLog.Info($"Convert:{entity}");
+            dstManager.AddComponentData(entity, new SentEntity());
             foreach (var entityReceiver in EntityReceivers)
             {
                 var potentialReceivers = entityReceiver.GetComponents<MonoBehaviour>();
@@ -26,6 +28,7 @@ namespace FootStone.Kitchen
                 {
                     if (potentialReceiver is IReceiveEntity receiver)
                     {
+                     //   FSLog.Info($"SetReceivedEntity:{entity}");
                         receiver.SetReceivedEntity(entity);
                     }
                 }
