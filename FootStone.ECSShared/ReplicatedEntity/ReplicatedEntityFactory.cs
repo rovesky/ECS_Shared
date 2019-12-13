@@ -77,7 +77,7 @@ namespace FootStone.ECS
 
         public ReplicatedEntityFactory GetFactory(ushort typeId)
         {
-            FSLog.Info(($"typeId:{typeId},factories size:{factories.Count}"));
+          //  FSLog.Info(($"typeId:{typeId},factories size:{factories.Count}"));
             return factories[typeId];
         }
 
