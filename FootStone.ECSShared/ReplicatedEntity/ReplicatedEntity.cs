@@ -68,30 +68,29 @@ namespace FootStone.ECS
             });
         }
 
-        void SetFlagAndChildFlags(Entity entity, bool set)
+        private void SetFlagAndChildFlags(Entity entity, bool set)
         {
             SetFlag(entity, set);
 
-            if (EntityManager.HasComponent<EntityGroupChildren>(entity))
+            if (!EntityManager.HasComponent<EntityGroupChildren>(entity)) 
+                return;
+
+            var buffer = EntityManager.GetBuffer<EntityGroupChildren>(entity);
+            for (var i = 0; i < buffer.Length; i++)
             {
-                var buffer = EntityManager.GetBuffer<EntityGroupChildren>(entity);
-                for (int i = 0; i < buffer.Length; i++)
-                {
-                    SetFlag(buffer[i].Entity, set);
-                }
+                SetFlag(buffer[i].Entity, set);
             }
         }
 
-        void SetFlag(Entity entity, bool set)
+        private void SetFlag(Entity entity, bool set)
         {
             var flagSet = EntityManager.HasComponent<ServerEntity>(entity);
-            if (flagSet != set)
-            {
-                if (set)
-                    PostUpdateCommands.AddComponent(entity, new ServerEntity());
-                else
-                    PostUpdateCommands.RemoveComponent<ServerEntity>(entity);
-            }
+            if (flagSet == set) return;
+
+            if (set)
+                PostUpdateCommands.AddComponent(entity, new ServerEntity());
+            else
+                PostUpdateCommands.RemoveComponent<ServerEntity>(entity);
         }
     }
 }
