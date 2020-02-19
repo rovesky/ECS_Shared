@@ -13,18 +13,18 @@ public class ProjectileModuleServer
     {
         m_GameWorld = gameWorld;
 
-        m_handleRequests = World.Active.CreateSystem<HandleServerProjectileRequests>(resourceSystem);
-        m_CreateMovementQueries = World.Active.CreateSystem<CreateProjectileMovementCollisionQueries>();
-        m_HandleMovementQueries = World.Active.CreateSystem<HandleProjectileMovementCollisionQuery>();
-        m_DespawnProjectiles = World.Active.CreateSystem<DespawnProjectiles>();
+        m_handleRequests = World.DefaultGameObjectInjectionWorld.CreateSystem<HandleServerProjectileRequests>(resourceSystem);
+        m_CreateMovementQueries = World.DefaultGameObjectInjectionWorld.CreateSystem<CreateProjectileMovementCollisionQueries>();
+        m_HandleMovementQueries = World.DefaultGameObjectInjectionWorld.CreateSystem<HandleProjectileMovementCollisionQuery>();
+        m_DespawnProjectiles = World.DefaultGameObjectInjectionWorld.CreateSystem<DespawnProjectiles>();
     }
 
     public void Shutdown()
     {
-        World.Active.DestroySystem(m_handleRequests);
-        World.Active.DestroySystem(m_CreateMovementQueries);
-        World.Active.DestroySystem(m_HandleMovementQueries);
-        World.Active.DestroySystem(m_DespawnProjectiles);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_handleRequests);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_CreateMovementQueries);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_HandleMovementQueries);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_DespawnProjectiles);
     }
 
     public void HandleRequests()

@@ -30,28 +30,28 @@ public class ProjectileModuleClient
         
         m_settings = Resources.Load<ProjectileModuleSettings>("ProjectileModuleSettings");
 
-        m_clientProjectileFactory = new ClientProjectileFactory(m_world, World.Active.EntityManager, m_SystemRoot, resourceSystem);
+        m_clientProjectileFactory = new ClientProjectileFactory(m_world, World.DefaultGameObjectInjectionWorld.EntityManager, m_SystemRoot, resourceSystem);
         
-        m_handleRequests = World.Active.CreateSystem<HandleClientProjectileRequests>(resourceSystem, m_SystemRoot, m_clientProjectileFactory);
-        m_handleProjectileSpawn = World.Active.CreateSystem<HandleProjectileSpawn>(m_SystemRoot, resourceSystem, m_clientProjectileFactory);
-        m_removeMispredictedProjectiles = World.Active.CreateSystem<RemoveMispredictedProjectiles>();
-        m_despawnClientProjectiles = World.Active.CreateSystem<DespawnClientProjectiles>( m_clientProjectileFactory);
-        m_CreateProjectileMovementQueries = World.Active.CreateSystem<CreateProjectileMovementCollisionQueries>();
-        m_HandleProjectileMovementQueries = World.Active.CreateSystem<HandleProjectileMovementCollisionQuery>();
-        m_updateClientProjectilesPredicted = World.Active.CreateSystem<UpdateClientProjectilesPredicted>();
-        m_updateClientProjectilesNonPredicted = World.Active.CreateSystem<UpdateClientProjectilesNonPredicted>();
+        m_handleRequests = World.DefaultGameObjectInjectionWorld.CreateSystem<HandleClientProjectileRequests>(resourceSystem, m_SystemRoot, m_clientProjectileFactory);
+        m_handleProjectileSpawn = World.DefaultGameObjectInjectionWorld.CreateSystem<HandleProjectileSpawn>(m_SystemRoot, resourceSystem, m_clientProjectileFactory);
+        m_removeMispredictedProjectiles = World.DefaultGameObjectInjectionWorld.CreateSystem<RemoveMispredictedProjectiles>();
+        m_despawnClientProjectiles = World.DefaultGameObjectInjectionWorld.CreateSystem<DespawnClientProjectiles>( m_clientProjectileFactory);
+        m_CreateProjectileMovementQueries = World.DefaultGameObjectInjectionWorld.CreateSystem<CreateProjectileMovementCollisionQueries>();
+        m_HandleProjectileMovementQueries = World.DefaultGameObjectInjectionWorld.CreateSystem<HandleProjectileMovementCollisionQuery>();
+        m_updateClientProjectilesPredicted = World.DefaultGameObjectInjectionWorld.CreateSystem<UpdateClientProjectilesPredicted>();
+        m_updateClientProjectilesNonPredicted = World.DefaultGameObjectInjectionWorld.CreateSystem<UpdateClientProjectilesNonPredicted>();
     }
 
     public void Shutdown()
     {
-        World.Active.DestroySystem(m_handleRequests);
-        World.Active.DestroySystem(m_handleProjectileSpawn);
-        World.Active.DestroySystem(m_removeMispredictedProjectiles);
-        World.Active.DestroySystem(m_despawnClientProjectiles);
-        World.Active.DestroySystem(m_CreateProjectileMovementQueries);
-        World.Active.DestroySystem(m_HandleProjectileMovementQueries);
-        World.Active.DestroySystem(m_updateClientProjectilesPredicted);
-        World.Active.DestroySystem(m_updateClientProjectilesNonPredicted);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_handleRequests);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_handleProjectileSpawn);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_removeMispredictedProjectiles);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_despawnClientProjectiles);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_CreateProjectileMovementQueries);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_HandleProjectileMovementQueries);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_updateClientProjectilesPredicted);
+        World.DefaultGameObjectInjectionWorld.DestroySystem(m_updateClientProjectilesNonPredicted);
 
     
         if(m_SystemRoot != null)

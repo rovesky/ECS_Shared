@@ -37,7 +37,7 @@ namespace FootStone.ECS
 
         public EntityManager GetEntityManager()
         {
-            return World.Active.EntityManager;
+            return World.DefaultGameObjectInjectionWorld.EntityManager;
         }
      
     }
