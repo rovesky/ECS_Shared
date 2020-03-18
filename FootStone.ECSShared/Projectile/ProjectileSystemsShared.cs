@@ -16,7 +16,7 @@ public class CreateProjectileMovementCollisionQueries : ComponentSystem
 
     protected override void OnCreate()
     {
-        base.OnCreateManager();
+        base.OnCreate();
         ProjectileGroup = GetEntityQuery(typeof(UpdateProjectileFlag), typeof(ProjectileData), 
             ComponentType.Exclude<Despawn>());
     }
@@ -70,9 +70,9 @@ public class HandleProjectileMovementCollisionQuery :ComponentSystem
 
     public HandleProjectileMovementCollisionQuery() { }
 
-    protected override void OnCreateManager()
+    protected override void OnCreate()
     {
-        base.OnCreateManager();
+        base.OnCreate();
         ProjectileGroup = GetEntityQuery(typeof(UpdateProjectileFlag), typeof(ProjectileData), 
             ComponentType.Exclude<Despawn>());
     }
@@ -161,7 +161,7 @@ public class DespawnProjectiles :ComponentSystem
 
     protected override void OnCreate()
     {
-        base.OnCreateManager();
+        base.OnCreate();
         ProjectileGroup = GetEntityQuery(typeof(ProjectileData));
     }
     

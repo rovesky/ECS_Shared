@@ -100,10 +100,10 @@ public class RaySphereQueryReciever : ComponentSystem
 		                    | 1 << m_hitCollisionLayer;
 	}
 	
-	protected override void OnCreateManager()
+	protected override void OnCreate()
 	{
 		m_colliderGroup = GetEntityQuery(typeof(HitCollisionHistory), typeof(HitCollisionData));
-		base.OnCreateManager();
+		base.OnCreate();
 	}
 
 	public int RegisterQuery(Query query)

@@ -51,13 +51,13 @@ public class HandleClientProjectileRequests :ComponentSystem
 
     protected override void OnCreate()
     {
-        base.OnCreateManager();
+        base.OnCreate();
         RequestGroup = GetEntityQuery(typeof(ProjectileRequest));
     }
 
     protected override void OnDestroy()
     {
-        base.OnDestroyManager();
+        base.OnDestroy();
         Resources.UnloadAsset(m_settings);
     }
 
@@ -428,9 +428,9 @@ public class DespawnClientProjectiles : ComponentSystem
         m_clientProjectileFactory = clientProjectileFactory;
     }
 
-    protected override void OnCreateManager()
+    protected override void OnCreate()
     {
-        base.OnCreateManager();
+        base.OnCreate();
 
         DespawningClientProjectileOwnerGroup = GetEntityQuery(typeof(ClientProjectileOwner), typeof(Despawn));
     }
