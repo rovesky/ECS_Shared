@@ -224,6 +224,8 @@ namespace FootStone.ECS
 
         public void ProcessEntityUpdate(int serverTick, int id, ref NetworkReader reader)
         {
+
+          //  FSLog.Info($"ProcessEntityUpdate,serverTick：{serverTick}，id:{id}!");
             var data = replicatedData[id];
 
             GameDebug.Assert(data.LastServerTick < serverTick,
@@ -247,6 +249,7 @@ namespace FootStone.ECS
 
         public void GenerateEntitySnapshot(int entityId, ref NetworkWriter writer)
         {
+         //   FSLog.Info($"GenerateEntitySnapshot,entityId:{entityId}!");
             var data = replicatedData[entityId];
 
             GameDebug.Assert(data.SerializableArray != null, "Failed to generate snapshot. Serializablearray is null");
