@@ -53,7 +53,7 @@ public class HandleServerProjectileRequests :ComponentSystem
 				continue;
 			}
 
-			var projectileEntity = m_settings.projectileFactory.Create(EntityManager,m_resourceSystem, null);
+			var projectileEntity = m_settings.projectileFactory.Create(EntityManager,m_resourceSystem, null,0);
 
 			var projectileData = EntityManager.GetComponentData<ProjectileData>(projectileEntity);
 			projectileData.SetupFromRequest(request, registryIndex);

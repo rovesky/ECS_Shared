@@ -9,7 +9,7 @@ using UnityEditor;
 public class ProjectileEntityFactory : ReplicatedEntityFactory
 {
     public override Entity Create(EntityManager entityManager, BundledResourceManager resourceManager, 
-        GameWorld world)
+        GameWorld world,ushort type)
     {
         var entity = entityManager.CreateEntity(typeof(ReplicatedEntityData), 
             typeof(ProjectileData) );

@@ -47,13 +47,13 @@ namespace FootStone.ECS
 
             for (var i = 0; i < entityList.Count; ++i)
             {
-                var entity = entities[i];
+                var entity = entityList[i];
                 var replicatedEntityData = EntityManager.GetComponentData<ReplicatedEntityData>(entity);
                 replicatedEntityData.Id = i;
                 EntityManager.SetComponentData(entity, replicatedEntityData);
 
-             //   var trans = EntityManager.GetComponentData<Translation>(entity);
-             //   FSLog.Info($"SceneEntities,id:{i},netId:{replicatedEntityData.NetId},trans:{trans.Value}");
+                var trans = EntityManager.GetComponentData<Translation>(entity);
+                FSLog.Info($"SceneEntities,id:{i},netId:{replicatedEntityData.NetId},trans:{trans.Value}");
             }
 
             SceneEntities.AddRange(entityList);

@@ -10,7 +10,7 @@ namespace FootStone.ECS
         [HideInInspector] public WeakAssetReference guid;
 
         public abstract Entity Create(EntityManager entityManager, BundledResourceManager resourceManager,
-            GameWorld world);
+            GameWorld world,ushort type);
 
 
 #if UNITY_EDITOR
