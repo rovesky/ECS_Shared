@@ -12,11 +12,13 @@ namespace FootStone.ECS
             GameObjectConversionSystem conversionSystem)
         {
           //  FSLog.Info(" dstManager.AddComponentData(entity, new ReplicatedEntityData");
+
+            var netId = transform.parent==null?gameObject.name:gameObject.name + transform.parent.gameObject.name;
             dstManager.AddComponentData(entity, new ReplicatedEntityData
             {
                 Id = -1,
                 PredictingPlayerId = -1,
-                NetId = ToVid(gameObject.name)
+                NetId = ToVid(netId)
             });
         }
 
