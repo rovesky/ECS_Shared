@@ -207,6 +207,8 @@ namespace FootStone.ECS
         public Entity Unregister(int entityId)
         {
             var entity = replicatedData[entityId].Entity;
+            if (entity == Entity.Null)
+                return Entity.Null;
             GameDebug.Assert(entity != Entity.Null, "Unregister. ReplicatedData has has entity set");
 
             if (showInfo.IntValue > 0)
@@ -224,10 +226,11 @@ namespace FootStone.ECS
 
         public void ProcessEntityUpdate(int serverTick, int id, ref NetworkReader reader)
         {
-
           //  FSLog.Info($"ProcessEntityUpdate,serverTick：{serverTick}，id:{id}!");
             var data = replicatedData[id];
-
+            if (data.Entity == Entity.Null)
+                return;
+            
             GameDebug.Assert(data.LastServerTick < serverTick,
                 "Failed to apply snapshot. Wrong tick order. entityId:{0} snapshot tick:{1} last server tick:{2}", id,
                 serverTick, data.LastServerTick);
