@@ -60,9 +60,9 @@ namespace FootStone.ECS
             Entities.ForEach((Entity entity,ref ReplicatedEntityData replicatedEntityData) =>
             {
              //   FSLog.Info($"localPlayerId:{localPlayerId},PredictingPlayerId:{replicatedEntityData.PredictingPlayerId}，id:{replicatedEntityData.Id}");
-             //   var locallyControlled = localPlayerId == -1 ||
-                                    //    replicatedEntityData.PredictingPlayerId == localPlayerId ||
-                                    //    replicatedEntityData.PredictingPlayerId == -1 ;
+                //var locallyControlled = localPlayerId == -1 ||
+                //                        replicatedEntityData.PredictingPlayerId == localPlayerId ||
+                //                        replicatedEntityData.PredictingPlayerId == -1 ;
 
                 var locallyControlled = true;
 

@@ -281,8 +281,8 @@ namespace FootStone.ECS
                 if (replicatedData[i].PredictedArray == null)
                     continue;
 
-                if (!entityManager.HasComponent<ServerEntity>(replicatedData[i].Entity))
-                    continue;
+               // if (!entityManager.HasComponent<ServerEntity>(replicatedData[i].Entity))
+                 //   continue;
 
                 foreach (var predicted in replicatedData[i].PredictedArray)
                     predicted.Rollback();
@@ -299,8 +299,8 @@ namespace FootStone.ECS
                 if (replicatedData[i].InterpolatedArray == null)
                     continue;
 
-                if (entityManager.HasComponent<ServerEntity>(replicatedData[i].Entity))
-                    continue;
+              //  if (entityManager.HasComponent<ServerEntity>(replicatedData[i].Entity))
+                  //  continue;
 
                 foreach (var interpolated in replicatedData[i].InterpolatedArray)
                     interpolated.Interpolate(time);
