@@ -11,18 +11,13 @@ namespace FootStone.Kitchen
         {
             Entities.ForEach((Entity entity, ref Despawn despawn) =>
             {
-                if (despawn.Frame <= 0)
+                if (EntityManager.HasComponent<Transform>(entity))
                 {
-                    if (EntityManager.HasComponent<Transform>(entity))
-                    {
-                        Object.Destroy(EntityManager.GetComponentObject<Transform>(entity).gameObject);
-                    }
-
-                    EntityManager.DestroyEntity(entity);
-                  
+                    Object.Destroy(EntityManager.GetComponentObject<Transform>(entity).gameObject);
                 }
 
-                despawn.Frame--;
+                EntityManager.DestroyEntity(entity);
+
             });
         }
     }
