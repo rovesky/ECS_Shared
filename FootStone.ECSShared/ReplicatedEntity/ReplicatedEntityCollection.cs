@@ -307,6 +307,46 @@ namespace FootStone.ECS
             }
         }
 
+        public void StorePredictedState(uint predictedTick)
+        {
+            for (int i = 0; i < replicatedData.Count; i++)
+            {
+                if (replicatedData[i].Entity == Entity.Null)
+                    continue;
+
+                if (replicatedData[i].PredictedArray == null)
+                    continue;
+
+                foreach (var predicted in replicatedData[i].PredictedArray)
+                {
+                      predicted.StorePredictedState(predictedTick);
+                }
+            }
+        }
+
+
+        public bool VerifyPrediction(uint predictedTick)
+        {
+            if (replicatedData.Count == 0)
+                return false;
+
+            for (var i = 0; i < replicatedData.Count; i++)
+            {
+                if (replicatedData[i].Entity == Entity.Null)
+                    continue;
+
+                if (replicatedData[i].PredictedArray == null)
+                    continue;
+
+                if (!replicatedData[i].VerifyPrediction(predictedTick))
+                {
+                  //  FSLog.Info($"predictedTick:{predictedTick},VerifyPrediction Fail:{replicatedData[i].Entity}");
+                    return false;
+                }
+            }
+            return true ;
+        }
+
 
         public string GenerateName(int entityId)
         {
@@ -338,11 +378,15 @@ namespace FootStone.ECS
             public IInterpolatedSerializer[] InterpolatedArray;
             public int LastServerTick;
 
-            public bool VerifyPrediction(int sampleIndex, int tick)
+            public bool VerifyPrediction(uint tick)
             {
                 foreach (var predictedDataHandler in PredictedArray)
-                    if (!predictedDataHandler.VerifyPrediction(sampleIndex, tick))
+                    if (!predictedDataHandler.VerifyPrediction(tick))
+                    {
+                        FSLog.Warning($"verify fail:{predictedDataHandler.GetTypeName()},tick：{tick}");
                         return false;
+                    }
+                      
 
                 return true;
             }
@@ -358,134 +402,134 @@ namespace FootStone.ECS
         }
 
 
-//#if UNITY_EDITOR
+        //#if UNITY_EDITOR
 
-//        public int GetSampleCount()
-//        {
-//            return historyCount;
-//        }
+        //        public int GetSampleCount()
+        //        {
+        //            return historyCount;
+        //        }
 
-//        public int GetSampleTick(int sampleIndex)
-//        {
-//            var i = (historyFirstIndex + sampleIndex) % hitstoryTicks.Length;
-//            return hitstoryTicks[i];
-//        }
+        //        public int GetSampleTick(int sampleIndex)
+        //        {
+        //            var i = (historyFirstIndex + sampleIndex) % hitstoryTicks.Length;
+        //            return hitstoryTicks[i];
+        //        }
 
-//        public int GetLastServerTick(int sampleIndex)
-//        {
-//            var i = (historyFirstIndex + sampleIndex) % hitstoryTicks.Length;
-//            return hitstoryLastServerTick[i];
-//        }
+        //        public int GetLastServerTick(int sampleIndex)
+        //        {
+        //            var i = (historyFirstIndex + sampleIndex) % hitstoryTicks.Length;
+        //            return hitstoryLastServerTick[i];
+        //        }
 
-//        public bool IsPredicted(int entityIndex)
-//        {
-//            var netId = GetNetIdFromEntityIndex(entityIndex);
-//            var replicatedData = m_replicatedData[netId];
-//            return m_world.GetEntityManager().HasComponent<ServerEntity>(replicatedData.entity);
-//        }
+        //        public bool IsPredicted(int entityIndex)
+        //        {
+        //            var netId = GetNetIdFromEntityIndex(entityIndex);
+        //            var replicatedData = m_replicatedData[netId];
+        //            return m_world.GetEntityManager().HasComponent<ServerEntity>(replicatedData.entity);
+        //        }
 
-//        public int GetEntityCount()
-//        {
-//            int entityCount = 0;
-//            for (int i = 0; i < m_replicatedData.Count; i++)
-//            {
-//                if (m_replicatedData[i].entity == Entity.Null)
-//                    continue;
-//                entityCount++;
-//            }
+        public int GetEntityCount()
+        {
+            int entityCount = 0;
+            for (int i = 0; i <replicatedData.Count; i++)
+            {
+                if (replicatedData[i].Entity == Entity.Null)
+                    continue;
+                entityCount++;
+            }
 
-//            return entityCount;
-//        }
+            return entityCount;
+        }
 
-//        public int GetNetIdFromEntityIndex(int entityIndex)
-//        {
-//            int entityCount = 0;
-//            for (int i = 0; i < m_replicatedData.Count; i++)
-//            {
-//                if (m_replicatedData[i].entity == Entity.Null)
-//                    continue;
+        //        public int GetNetIdFromEntityIndex(int entityIndex)
+        //        {
+        //            int entityCount = 0;
+        //            for (int i = 0; i < m_replicatedData.Count; i++)
+        //            {
+        //                if (m_replicatedData[i].entity == Entity.Null)
+        //                    continue;
 
-//                if (entityCount == entityIndex)
-//                    return i;
+        //                if (entityCount == entityIndex)
+        //                    return i;
 
-//                entityCount++;
-//            }
+        //                entityCount++;
+        //            }
 
-//            return -1;
-//        }
+        //            return -1;
+        //        }
 
-//        public ReplicatedData GetReplicatedDataForNetId(int netId)
-//        {
-//            return m_replicatedData[netId];
-//        }
+        //        public ReplicatedData GetReplicatedDataForNetId(int netId)
+        //        {
+        //            return m_replicatedData[netId];
+        //        }
 
-//        public void StorePredictedState(int predictedTick, int finalTick)
-//        {
-//            if (!SampleHistory)
-//                return;
+        //        public void StorePredictedState(int predictedTick, int finalTick)
+        //        {
+        //            if (!SampleHistory)
+        //                return;
 
-//            var predictionIndex = finalTick - predictedTick;
-//            var sampleIndex = GetSampleIndex();
+        //            var predictionIndex = finalTick - predictedTick;
+        //            var sampleIndex = GetSampleIndex();
 
-//            for (int i = 0; i < m_replicatedData.Count; i++)
-//            {
-//                if (m_replicatedData[i].entity == Entity.Null)
-//                    continue;
+        //            for (int i = 0; i < m_replicatedData.Count; i++)
+        //            {
+        //                if (m_replicatedData[i].entity == Entity.Null)
+        //                    continue;
 
-//                if (m_replicatedData[i].predictedArray == null)
-//                    continue;
+        //                if (m_replicatedData[i].predictedArray == null)
+        //                    continue;
 
-//                if (!m_world.GetEntityManager().HasComponent<ServerEntity>(m_replicatedData[i].entity))
-//                    continue;
+        //                if (!m_world.GetEntityManager().HasComponent<ServerEntity>(m_replicatedData[i].entity))
+        //                    continue;
 
-//                foreach (var predicted in m_replicatedData[i].predictedArray)
-//                {
-//                    predicted.StorePredictedState(sampleIndex, predictionIndex);
-//                }
-//            }
-//        }
-
-
-//        public void FinalizedStateHistory(int tick, int lastServerTick, ref UserCommand command)
-//        {
-//            if (!SampleHistory)
-//                return;
-
-//            var sampleIndex = (historyFirstIndex + historyCount) % hitstoryTicks.Length;
-
-//            hitstoryTicks[sampleIndex] = tick;
-//            historyCommands[sampleIndex] = command;
-//            hitstoryLastServerTick[sampleIndex] = lastServerTick;
-
-//            if (historyCount < hitstoryTicks.Length)
-//                historyCount++;
-//            else
-//                historyFirstIndex = (historyFirstIndex + 1) % hitstoryTicks.Length;
-//        }
-
-//        int GetSampleIndex()
-//        {
-//            return (historyFirstIndex + historyCount) % hitstoryTicks.Length;
-//        }
-
-//        public int FindSampleIndexForTick(int tick)
-//        {
-//            for (int i = 0; i < hitstoryTicks.Length; i++)
-//            {
-//                if (hitstoryTicks[i] == tick)
-//                    return i;
-//            }
-
-//            return -1;
-//        }
+        //                foreach (var predicted in m_replicatedData[i].predictedArray)
+        //                {
+        //                    predicted.StorePredictedState(sampleIndex, predictionIndex);
+        //                }
+        //            }
+        //        }
 
 
-//        UserCommand[] historyCommands;
-//        int[] hitstoryTicks;
-//        int[] hitstoryLastServerTick;
-//        int historyFirstIndex;
-//        int historyCount;
+        //        public void FinalizedStateHistory(int tick, int lastServerTick, ref UserCommand command)
+        //        {
+        //            if (!SampleHistory)
+        //                return;
 
-//#endif
+        //            var sampleIndex = (historyFirstIndex + historyCount) % hitstoryTicks.Length;
+
+        //            hitstoryTicks[sampleIndex] = tick;
+        //            historyCommands[sampleIndex] = command;
+        //            hitstoryLastServerTick[sampleIndex] = lastServerTick;
+
+        //            if (historyCount < hitstoryTicks.Length)
+        //                historyCount++;
+        //            else
+        //                historyFirstIndex = (historyFirstIndex + 1) % hitstoryTicks.Length;
+        //        }
+
+        //        int GetSampleIndex()
+        //        {
+        //            return (historyFirstIndex + historyCount) % hitstoryTicks.Length;
+        //        }
+
+        //        public int FindSampleIndexForTick(int tick)
+        //        {
+        //            for (int i = 0; i < hitstoryTicks.Length; i++)
+        //            {
+        //                if (hitstoryTicks[i] == tick)
+        //                    return i;
+        //            }
+
+        //            return -1;
+        //        }
+
+
+        //        UserCommand[] historyCommands;
+        //        int[] hitstoryTicks;
+        //        int[] hitstoryLastServerTick;
+        //        int historyFirstIndex;
+        //        int historyCount;
+
+        //#endif
     }
 }

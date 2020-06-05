@@ -65,12 +65,14 @@ namespace FootStone.ECS
         void Deserialize(ref NetworkReader reader, int tick);
         void Rollback();
 
+        string GetTypeName();
+
         Entity GetEntity();
         bool HasServerState(int tick);
-        object GetServerState(int tick);
-        void StorePredictedState(int sampleIndex, int predictionIndex);
+        object GetServerState(uint tick);
+        void StorePredictedState(uint predictionIndex);
         object GetPredictedState(int sampleIndex, int predictionIndex);
-        bool VerifyPrediction(int sampleIndex, int tick);
+        bool VerifyPrediction(uint tick);
     }
 
     public interface IInterpolatedSerializer
@@ -133,8 +135,8 @@ namespace FootStone.ECS
             serverStateTicks = new SparseTickBuffer(ReplicatedEntityCollection.HistorySize);
             serverStates = new T[ReplicatedEntityCollection.HistorySize];
 
-            //        predictedStateTicks = new SparseTickBuffer(ReplicatedEntityCollection.HistorySize);
-            predictedStates = new T[ReplicatedEntityCollection.HistorySize * ReplicatedEntityCollection.PredictionSize];
+            predictedStateTicks = new SparseTickBuffer(ReplicatedEntityCollection.PredictionSize);
+            predictedStates = new T[ReplicatedEntityCollection.PredictionSize];
         }
 
         public void Serialize(ref NetworkWriter writer)
@@ -148,15 +150,11 @@ namespace FootStone.ECS
             context.Tick = tick;
             lastServerState.Deserialize(ref context, ref reader);
 
-#if UNITY_EDITOR
-            //if (ReplicatedEntityCollection.SampleHistory)
-            //{
-            //    var index = serverStateTicks.GetIndex((uint)tick);
-            //    if(index == -1)                
-            //        index = serverStateTicks.Register((uint)tick);
-            //    serverStates[index] = m_lastServerState;
-            //}
-#endif
+            var index = serverStateTicks.GetIndex((uint) tick);
+            if (index == -1)
+                index = serverStateTicks.Register((uint) tick);
+            serverStates[index] = lastServerState;
+
         }
 
         public void Rollback()
@@ -172,7 +170,7 @@ namespace FootStone.ECS
             return context.Entity;
         }
 
-        public object GetServerState(int tick)
+        public object GetServerState(uint tick)
         {
             var index = serverStateTicks.GetIndex((uint) tick);
             if (index == -1)
@@ -187,16 +185,12 @@ namespace FootStone.ECS
             return index != -1;
         }
 
-        public void StorePredictedState(int sampleIndex, int predictionIndex)
+        public void StorePredictedState(uint tick)
         {
-            if (!ReplicatedEntityCollection.SampleHistory)
-                return;
-
-            if (predictionIndex >= ReplicatedEntityCollection.PredictionSize)
-                return;
-
-            var index = sampleIndex * ReplicatedEntityCollection.PredictionSize + predictionIndex;
-
+            var index = predictedStateTicks.GetIndex(tick);
+            if (index == -1)
+                index = predictedStateTicks.Register(tick);
+          
             var state = context.EntityManager.GetComponentData<T>(context.Entity);
             predictedStates[index] = state;
         }
@@ -210,14 +204,21 @@ namespace FootStone.ECS
             return predictedStates[index];
         }
 
-        public bool VerifyPrediction(int sampleIndex, int tick)
+        public bool VerifyPrediction(uint tick)
         {
-            var serverIndex = serverStateTicks.GetIndex((uint) tick);
+            var serverIndex = serverStateTicks.GetIndex(tick);
             if (serverIndex == -1)
                 return true;
 
-            var predictedIndex = sampleIndex * ReplicatedEntityCollection.PredictionSize;
+            var predictedIndex = predictedStateTicks.GetIndex(tick);
+            if (predictedIndex == -1)
+                return true;
             return serverStates[serverIndex].VerifyPrediction(ref predictedStates[predictedIndex]);
+        }
+
+        public string GetTypeName()
+        {
+            return typeof(T).Name;
         }
     }
 
