@@ -212,7 +212,7 @@ namespace FootStone.ECS
 
             var predictedIndex = predictedStateTicks.GetIndex(tick);
             if (predictedIndex == -1)
-                return true;
+                return false;
             return serverStates[serverIndex].VerifyPrediction(ref predictedStates[predictedIndex]);
         }
 
